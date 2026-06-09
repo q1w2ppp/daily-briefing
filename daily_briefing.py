@@ -171,13 +171,18 @@ def send_feishu(message: str):
     """发送到飞书群机器人"""
     if not FEISHU_WEBHOOK:
         return
-    payload = {"msg_type": "interactive", "card": {
-        "header": {"title": {"content": "每日 AI 简报", "tag": "plain_text"}},
-        "elements": [{"tag": "markdown", "content": message}]
-    }}
+    # 飞书自定义机器人仅支持 text / post 格式
+    payload = {
+        "msg_type": "text",
+        "content": {
+            "text": message
+        }
+    }
     try:
         resp = requests.post(FEISHU_WEBHOOK, json=payload, timeout=10)
         print(f"[飞书] 发送{'成功' if resp.status_code==200 else '失败'}: {resp.status_code}")
+        if resp.status_code != 200:
+            print(f"[飞书] 返回内容: {resp.text}")
     except Exception as e:
         print(f"[飞书] 发送异常: {e}")
 
