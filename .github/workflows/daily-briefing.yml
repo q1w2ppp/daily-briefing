@@ -1,7 +1,10 @@
 name: 每日 AI 简报
 
 on:
-  schedule:
+  
+    push:
+    branches: [master]
+  schedule   时间表:  
     # 每天早上 8:00 (北京时间) = UTC 0:00
     - cron: "0 0 * * *"
   workflow_dispatch:  # 允许手动触发
@@ -22,12 +25,13 @@ jobs:
       - name: 安装依赖
         run: pip install -r requirements.txt
 
-      - name: 运行简报脚本
+      - name   名字: 运行简报脚本
         env:
-          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}LLM_API_KEY: ${{secrets。LLM_API_KEY}}
           LLM_API_URL: ${{ secrets.LLM_API_URL }}
-          LLM_MODEL: ${{ secrets.LLM_MODEL }}
+          LLM_MODEL: ${{ secrets.LLM_MODEL }}LLM_MODEL: ${{secrets。LLM_MODEL}}
           FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
           DINGTALK_WEBHOOK: ${{ secrets.DINGTALK_WEBHOOK }}
           SERVER_CHAN_KEY: ${{ secrets.SERVER_CHAN_KEY }}
-        run: python daily_briefing.py
+        run   运行: python daily_briefing.py
+   时间表:
