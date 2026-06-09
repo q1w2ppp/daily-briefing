@@ -1,4 +1,4 @@
-name: 每日 AI 简报
+name: Daily AI Briefing
 
 on:
   push:
@@ -10,25 +10,22 @@ on:
 jobs:
   briefing:
     runs-on: ubuntu-latest
-
     steps:
-      - name: 检出代码
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: 安装 Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: 安装依赖
+      - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: 运行简报脚本
+      - name: Run briefing
         env:
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           LLM_API_URL: ${{ secrets.LLM_API_URL }}
           LLM_MODEL: ${{ secrets.LLM_MODEL }}
           FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
-          DINGTALK_WEBHOOK: ${{ secrets.DINGTALK_WEBHOOK }}
-          SERVER_CHAN_KEY: ${{ secrets.SERVER_CHAN_KEY }}
         run: python daily_briefing.py
