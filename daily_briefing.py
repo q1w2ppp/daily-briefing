@@ -12,9 +12,10 @@ from typing import Optional
 # ============================================================
 
 # 大模型 API（兼容 OpenAI 格式，也可用 DeepSeek / 通义千问 / Kimi 等）
-LLM_API_KEY  = os.environ.get("LLM_API_KEY", "sk-your-api-key-here")
-LLM_API_URL  = os.environ.get("LLM_API_URL", "https://api.deepseek.com/v1/chat/completions")
-LLM_MODEL    = os.environ.get("LLM_MODEL", "deepseek-chat")
+# 用 or 兜底：GitHub Actions 中 Secret 不存在时会给空字符串 ""
+LLM_API_KEY  = os.environ.get("LLM_API_KEY") or "sk-your-api-key-here"
+LLM_API_URL  = os.environ.get("LLM_API_URL") or "https://api.deepseek.com/v1/chat/completions"
+LLM_MODEL    = os.environ.get("LLM_MODEL") or "deepseek-chat"
 
 # RSS 源列表
 RSS_SOURCES = [
@@ -27,9 +28,9 @@ RSS_SOURCES = [
 TOP_N = 3
 
 # 推送方式（飞书 / 钉钉 / Server酱），留空则不推送
-FEISHU_WEBHOOK  = os.environ.get("FEISHU_WEBHOOK", "")
-DINGTALK_WEBHOOK = os.environ.get("DINGTALK_WEBHOOK", "")
-SERVER_CHAN_KEY  = os.environ.get("SERVER_CHAN_KEY", "")
+FEISHU_WEBHOOK  = os.environ.get("FEISHU_WEBHOOK") or ""
+DINGTALK_WEBHOOK = os.environ.get("DINGTALK_WEBHOOK") or ""
+SERVER_CHAN_KEY  = os.environ.get("SERVER_CHAN_KEY") or ""
 
 # 是否用 newspaper3k 提取正文（需要额外安装：pip install newspaper3k）
 USE_FULL_TEXT = False
@@ -223,6 +224,13 @@ def main():
     print("=" * 50)
     print(f"🚀 每日 AI 简报 — 开始运行 {datetime.now()}")
     print("=" * 50)
+
+    # 调试：检查配置
+    print(f"\n🔧 配置检查:")
+    print(f"   LLM_API_KEY 已设置: {'是' if LLM_API_KEY and LLM_API_KEY != 'sk-your-api-key-here' else '否'}")
+    print(f"   LLM_API_URL = {LLM_API_URL[:50]}...")
+    print(f"   LLM_MODEL = {LLM_MODEL}")
+    print(f"   FEISHU_WEBHOOK 已设置: {'是' if FEISHU_WEBHOOK else '否'}")
 
     # Step 1: 抓取
     print("\n📡 正在抓取 RSS...")
