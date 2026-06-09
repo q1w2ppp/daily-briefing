@@ -12,10 +12,20 @@ from typing import Optional
 # ============================================================
 
 # 大模型 API（兼容 OpenAI 格式，也可用 DeepSeek / 通义千问 / Kimi 等）
-# 用 or 兜底：GitHub Actions 中 Secret 不存在时会给空字符串 ""
-LLM_API_KEY  = os.environ.get("LLM_API_KEY") or "sk-your-api-key-here"
+LLM_API_KEY  = os.environ.get("LLM_API_KEY") or ""
 LLM_API_URL  = os.environ.get("LLM_API_URL") or "https://api.deepseek.com/v1/chat/completions"
 LLM_MODEL    = os.environ.get("LLM_MODEL") or "deepseek-chat"
+
+# 如果环境变量未设置，从 config.json 读取
+import json as _json
+_config_path = os.path.join(os.path.dirname(__file__), "config.json")
+if os.path.exists(_config_path):
+    with open(_config_path, "r") as _f:
+        _cfg = _json.load(_f)
+    LLM_API_KEY = LLM_API_KEY or _cfg.get("LLM_API_KEY", "")
+    LLM_API_URL = LLM_API_URL or _cfg.get("LLM_API_URL", LLM_API_URL)
+    LLM_MODEL = LLM_MODEL or _cfg.get("LLM_MODEL", LLM_MODEL)
+    FEISHU_WEBHOOK = _cfg.get("FEISHU_WEBHOOK", "") if not os.environ.get("FEISHU_WEBHOOK") else os.environ.get("FEISHU_WEBHOOK")
 
 # RSS 源列表
 RSS_SOURCES = [
