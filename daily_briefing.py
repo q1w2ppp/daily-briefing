@@ -34,7 +34,7 @@ DINGTALK_WEBHOOK = os.environ.get("DINGTALK_WEBHOOK") or ""
 SERVER_CHAN_KEY  = os.environ.get("SERVER_CHAN_KEY") or ""
 
 # 是否用 newspaper3k 提取正文（需要额外安装：pip install newspaper3k）
-USE_FULL_TEXT = True
+USE_FULL_TEXT = False
 
 # 请求延迟（秒），避免被反爬
 REQUEST_DELAY = 3
