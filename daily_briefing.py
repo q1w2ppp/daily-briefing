@@ -34,7 +34,10 @@ DINGTALK_WEBHOOK = os.environ.get("DINGTALK_WEBHOOK") or ""
 SERVER_CHAN_KEY  = os.environ.get("SERVER_CHAN_KEY") or ""
 
 # 是否用 newspaper3k 提取正文（需要额外安装：pip install newspaper3k）
-USE_FULL_TEXT = False
+USE_FULL_TEXT = True
+
+# 请求延迟（秒），避免被反爬
+REQUEST_DELAY = 3
 
 # 如果环境变量未设置，从 config.json 读取
 import json as _json
@@ -55,12 +58,28 @@ def extract_full_text(url: str) -> Optional[str]:
         return None
     try:
         from newspaper import Article
-        article = Article(url)
+        import time
+        # 设置请求头和超时，模拟正常浏览器访问
+        article = Article(
+            url,
+            browser_user_agent=(
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/120.0.0.0 Safari/537.36"
+            ),
+            request_timeout=15,
+        )
         article.download()
         article.parse()
         text = article.text.strip()
-        return text[:3000] if len(text) > 100 else None
-    except Exception:
+        if len(text) > 100:
+            print(f"   [提取正文] 成功，{len(text)} 字符")
+            return text[:5000]
+        else:
+            print(f"   [提取正文] 内容过短，降级使用 RSS 摘要")
+            return None
+    except Exception as e:
+        print(f"   [提取正文] 失败: {e}，降级使用 RSS 摘要")
         return None
 
 
@@ -107,17 +126,24 @@ def fetch_feeds() -> list[dict]:
 
 def summarize(article: dict) -> str:
     """调用大模型生成 200 字以内的核心观点总结"""
+    used_full_text = False
     content = article.get("summary", "")
 
-    # 可选：提取正文替代摘要
+    # 优先提取正文，失败降级使用 RSS 摘要
     if USE_FULL_TEXT and article.get("link"):
         full = extract_full_text(article["link"])
         if full:
             content = full
+            used_full_text = True
+        else:
+            print(f"   [降级] 使用 RSS 摘要 ({len(content)} 字符)")
 
     # 如果没有内容，跳过
     if not content or len(content) < 20:
+        print(f"   [跳过] 内容过短")
         return "（内容过短，无法总结）"
+
+    print(f"   [总结] 使用{'正文' if used_full_text else '摘要'} ({len(content)} 字符)")
 
     system_prompt = (
         "你是一个专业的科技新闻编辑。请用 200 字以内总结以下文章的核心观点。"
@@ -256,10 +282,15 @@ def main():
     # Step 2: 总结
     print("\n🤖 正在调用大模型总结...")
     summaries = []
+    import time as _time
     for i, article in enumerate(articles, 1):
         print(f"   总结第 {i} 篇: {article['title'][:30]}...")
         summary = summarize(article)
         summaries.append(summary)
+        # 请求间隔，避免被封
+        if i < len(articles) and REQUEST_DELAY > 0:
+            print(f"   ⏳ 等待 {REQUEST_DELAY} 秒...")
+            _time.sleep(REQUEST_DELAY)
 
     # Step 3: 格式化
     message = format_message(articles, summaries)

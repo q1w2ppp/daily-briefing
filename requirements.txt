@@ -1,3 +1,4 @@
 feedparser>=6.0.0
 requests>=2.28.0
-newspaper3k>=0.2.8; python_version >= "3.8"
+newspaper3k>=0.2.8
+lxml_html_clean
